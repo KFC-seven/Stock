@@ -2,5 +2,4 @@ __pycache__/
 *.pyc
 *.db
 *.db-journal
-.auth_config.yaml
 .streamlit/secrets.toml
