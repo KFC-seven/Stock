@@ -1,19 +1,10 @@
 """行情数据提供层 - 封装 AKShare"""
+import os
 import logging
-import functools
 from datetime import datetime, date
 from src.database import get_session, DailyPrice
 
 logger = logging.getLogger(__name__)
-
-
-def _cached(func):
-    """如果有 Streamlit 则用 st.cache_data 缓存，否则直接执行"""
-    try:
-        import streamlit as st
-        return st.cache_data(ttl=86400)(func)  # 缓存24小时（净值一天一更新）
-    except ImportError:
-        return func
 
 
 def _safe_float(val, default=0.0):
@@ -93,25 +84,64 @@ ASSET_PROVIDERS = {
 }
 
 
-@_cached
-def _get_stock_list():
-    """获取并缓存A股全量列表"""
+# 本地文件缓存目录（跨重启持久化）
+CACHE_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "cache")
+os.makedirs(CACHE_DIR, exist_ok=True)
+
+
+def _load_or_fetch(name, fetch_func, ttl_hours=24):
+    """本地文件缓存：优先读文件，过期或不存则调用 API 并写入文件"""
+    import pandas as pd
+    cache_file = os.path.join(CACHE_DIR, f"{name}.parquet")
+    cache_valid = False
+
+    if os.path.exists(cache_file):
+        mtime = os.path.getmtime(cache_file)
+        age_hours = (datetime.now().timestamp() - mtime) / 3600
+        if age_hours < ttl_hours:
+            cache_valid = True
+
+    if cache_valid:
+        try:
+            return pd.read_parquet(cache_file)
+        except Exception:
+            pass
+
+    # 缓存过期或读取失败 → 重新下载
+    df = fetch_func()
+    if df is not None and not df.empty:
+        try:
+            df.to_parquet(cache_file, index=False)
+        except Exception:
+            pass
+    return df
+
+
+def _fetch_stocks():
     import akshare as ak
     return ak.stock_zh_a_spot_em()
 
 
-@_cached
-def _get_etf_list():
-    """获取并缓存ETF列表"""
+def _fetch_etfs():
     import akshare as ak
     return ak.fund_etf_spot_em()
 
 
-@_cached
-def _get_bond_list():
-    """获取并缓存可转债列表"""
+def _fetch_bonds():
     import akshare as ak
     return ak.bond_zh_cov()
+
+
+def _get_stock_list():
+    return _load_or_fetch("stocks", _fetch_stocks)
+
+
+def _get_etf_list():
+    return _load_or_fetch("etfs", _fetch_etfs, ttl_hours=24)
+
+
+def _get_bond_list():
+    return _load_or_fetch("bonds", _fetch_bonds, ttl_hours=24)
 
 
 def search_asset(query):
