@@ -5,6 +5,37 @@ from src.database import get_session, Holding, DailyPrice, Transaction, User
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+import plotly.io as pio
+
+# 设置 Plotly 暗色主题
+pio.templates["premium_dark"] = go.layout.Template(
+    layout=go.Layout(
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        font=dict(family="Inter, -apple-system, sans-serif", size=13, color="#c8ccd8"),
+        title=dict(font=dict(size=16, color="#e8ecf4", weight=600)),
+        xaxis=dict(
+            gridcolor="rgba(255,255,255,0.04)",
+            zerolinecolor="rgba(255,255,255,0.06)",
+            tickfont=dict(color="rgba(255,255,255,0.4)", size=11),
+        ),
+        yaxis=dict(
+            gridcolor="rgba(255,255,255,0.04)",
+            zerolinecolor="rgba(255,255,255,0.06)",
+            tickfont=dict(color="rgba(255,255,255,0.4)", size=11),
+        ),
+        legend=dict(font=dict(size=12, color="#c8ccd8")),
+        margin=dict(l=40, r=20, t=40, b=40),
+        hovermode="closest",
+        hoverlabel=dict(
+            bgcolor="rgba(20,22,30,0.95)",
+            font_size=12,
+            font_color="#e8ecf4",
+            bordercolor="rgba(255,255,255,0.1)",
+        ),
+    )
+)
+pio.templates.default = "premium_dark"
 
 
 def get_user_holdings(user_id):
@@ -221,7 +252,7 @@ def plot_profit_bar(portfolio_result):
     items = sorted(portfolio_result["items"], key=lambda x: x["profit"])
     names = [f"{i['asset_name']}({i['asset_code']})" for i in items]
     profits = [i["profit"] for i in items]
-    colors = ["#ef4444" if p < 0 else "#22c55e" for p in profits]
+    colors = ["#22c55e" if p < 0 else "#ef4444" for p in profits]  # 中国红涨绿跌
 
     fig = go.Figure(data=[
         go.Bar(x=names, y=profits, marker_color=colors)
