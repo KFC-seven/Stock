@@ -39,7 +39,15 @@
       "WebFetch(domain:stock-manager-zy.streamlit.app)",
       "Bash(curl *)",
       "WebSearch",
-      "Bash(\"C:/Users/ZY/AppData/Local/Programs/Python/Python312/python.exe\" -m pip install pytesseract opencv-python-headless)"
+      "Bash(\"C:/Users/ZY/AppData/Local/Programs/Python/Python312/python.exe\" -m pip install pytesseract opencv-python-headless)",
+      "Bash(npm --version)",
+      "Bash(pnpm --version)",
+      "Bash(npm install *)",
+      "Bash(\"C:/Users/ZY/AppData/Local/Programs/Python/Python312/python.exe\" -m pip install fastapi uvicorn python-jose[cryptography] passlib[bcrypt] python-multipart pydantic akshare sqlalchemy pandas aiofiles)",
+      "Bash(pnpm create *)",
+      "Bash(pnpm add *)",
+      "Bash(export LANG=en_US.UTF-8)",
+      "Bash(\"C:/Users/ZY/AppData/Local/Programs/Python/Python312/python.exe\" -c \"print\\('测试中文显示成功'\\)\")"
     ]
   }
 }

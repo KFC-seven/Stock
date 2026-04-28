@@ -98,7 +98,10 @@ def login_page():
                     else:
                         ok, msg = register_user(new_user, new_pass, new_name)
                         if ok:
-                            st.success(f"{msg}，请切换到登录页面登录")
+                            # 注册后自动登录
+                            st.session_state["authentication_status"] = True
+                            st.session_state["username"] = new_user
+                            st.session_state["name"] = new_name
                             st.rerun()
                         else:
                             st.error(msg)

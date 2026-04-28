@@ -1,7 +1,7 @@
 """投资管家 - 个人投资管理系统"""
 import streamlit as st
 from src.database import init_db
-from src.auth import login_page
+from src.auth import ensure_auth
 from src.styles import inject_css
 
 # 页面配置（必须放在最前面）
@@ -15,10 +15,8 @@ st.set_page_config(
 # 初始化数据库
 init_db()
 
-# 全局 CSS（仅注入一次）
-if "_css_injected" not in st.session_state:
-    inject_css()
-    st.session_state._css_injected = True
+# 全局 CSS（每次刷新都注入，防止刷新错位）
+inject_css()
 
 
 def main():
