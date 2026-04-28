@@ -160,10 +160,18 @@ for h in holdings:
             with st.form(f"edit_form_{h.id}", border=False):
                 ec1, ec2 = st.columns(2)
                 with ec1:
+                    new_type = st.selectbox(
+                        "类型",
+                        options=list(ASSET_TYPES.keys()),
+                        format_func=lambda x: ASSET_TYPES[x],
+                        index=list(ASSET_TYPES.keys()).index(h.asset_type) if h.asset_type in ASSET_TYPES else 0,
+                        key=f"type_{h.id}"
+                    )
+                    new_code = st.text_input("代码", value=h.asset_code, key=f"code_{h.id}")
                     new_qty = st.number_input("数量", value=h.quantity, step=0.01, format="%.4f", key=f"qty_{h.id}")
-                    new_cost = st.number_input("成本价", value=h.cost_price, step=0.001, format="%.4f", key=f"cost_{h.id}")
                 with ec2:
                     new_name = st.text_input("名称", value=h.asset_name, key=f"name_{h.id}")
+                    new_cost = st.number_input("成本价", value=h.cost_price, step=0.001, format="%.4f", key=f"cost_{h.id}")
                     new_notes = st.text_area("备注", value=h.notes or "", key=f"notes_{h.id}")
 
                 ec3, ec4 = st.columns(2)
@@ -171,9 +179,11 @@ for h in holdings:
                     if st.form_submit_button("保存", type="primary", use_container_width=True):
                         ok, msg = update_holding(
                             h.id,
+                            asset_type=new_type,
+                            asset_code=new_code.strip(),
+                            asset_name=new_name,
                             quantity=new_qty,
                             cost_price=new_cost,
-                            asset_name=new_name,
                             notes=new_notes,
                         )
                         if ok:
