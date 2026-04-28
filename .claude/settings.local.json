@@ -47,7 +47,12 @@
       "Bash(pnpm create *)",
       "Bash(pnpm add *)",
       "Bash(export LANG=en_US.UTF-8)",
-      "Bash(\"C:/Users/ZY/AppData/Local/Programs/Python/Python312/python.exe\" -c \"print\\('测试中文显示成功'\\)\")"
+      "Bash(\"C:/Users/ZY/AppData/Local/Programs/Python/Python312/python.exe\" -c \"print\\('测试中文显示成功'\\)\")",
+      "Bash(\"C:/Users/ZY/AppData/Local/Programs/Python/Python312/python.exe\" -m uvicorn app.main:app --host 0.0.0.0 --port 8000)",
+      "Bash(npx vite *)",
+      "Bash(taskkill -f -im python.exe)",
+      "Bash(npx vercel *)",
+      "Bash(npx vue-tsc *)"
     ]
   }
 }
