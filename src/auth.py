@@ -135,3 +135,34 @@ def _sync_users_from_config():
         db.commit()
     finally:
         db.close()
+
+
+def ensure_auth():
+    """在页面加载时验证 cookie 并确保登录状态。
+
+    所有受保护的页面在开头调用此函数。
+    如果 cookie 有效，自动恢复登录状态；否则显示登录页。
+    """
+    _sync_users_from_config()
+    authenticator = get_authenticator()
+
+    # unrendered 模式：只检查 cookie，不渲染表单
+    authenticator.login(location="unrendered")
+
+    # 如果 cookie 恢复了登录，确保 user_id 存在
+    if st.session_state.get("authentication_status"):
+        if "user_id" not in st.session_state:
+            username = st.session_state.get("username")
+            if username:
+                db = get_session()
+                try:
+                    user = db.query(User).filter(User.username == username).first()
+                    if user:
+                        st.session_state["user_id"] = user.id
+                finally:
+                    db.close()
+
+    # 未登录则显示登录页并停止
+    if not st.session_state.get("authentication_status"):
+        login_page()
+        st.stop()

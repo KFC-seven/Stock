@@ -6,13 +6,12 @@ from src.portfolio import (
 )
 from src.data_provider import get_current_price, save_price, search_asset
 from src.styles import inject_css
+from src.auth import ensure_auth
 
 st.set_page_config(page_title="持仓管理", page_icon="📈", layout="wide")
 inject_css()
 
-if not st.session_state.get("authentication_status"):
-    st.warning("请先在首页登录")
-    st.stop()
+ensure_auth()
 
 user_id = st.session_state.get("user_id")
 user_name = st.session_state.get("name", "用户")

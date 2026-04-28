@@ -7,13 +7,12 @@ from src.portfolio import get_user_holdings, add_holding, update_holding
 from src.data_provider import save_price
 from src.ocr_import import ocr_image, parse_fund_text, calculate_holding_from_screenshot
 from src.styles import inject_css
+from src.auth import ensure_auth
 
 st.set_page_config(page_title="导入持仓", page_icon="📷", layout="wide")
 inject_css()
 
-if not st.session_state.get("authentication_status"):
-    st.warning("请先在首页登录")
-    st.stop()
+ensure_auth()
 
 user_id = st.session_state.get("user_id")
 st.title("📷 导入持仓")

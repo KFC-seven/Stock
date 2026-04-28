@@ -23,14 +23,8 @@ if "_css_injected" not in st.session_state:
 
 def main():
     """主入口"""
-    # 先登录
-    login_page()
-
-    # 未登录不继续
-    if not st.session_state.get("authentication_status"):
-        # 清除侧边栏
-        st.sidebar.empty()
-        return
+    # 验证登录（cookie 自动续登 or 显示登录页）
+    ensure_auth()
 
     # 已登录 - 侧边栏显示用户信息
     user_name = st.session_state.get("name", "用户")
@@ -38,7 +32,7 @@ def main():
         st.markdown(f"### 👋 {user_name}")
         st.divider()
 
-    # 页面路由 - 使用 pages 目录自动路由
+    # 跳转到看板
     st.switch_page("pages/01_📊_看板.py")
 
 
