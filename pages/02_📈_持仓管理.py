@@ -4,6 +4,7 @@ from datetime import date
 from src.portfolio import (
     get_user_holdings, add_holding, update_holding, delete_holding
 )
+from src.data_provider import get_current_price, save_price
 
 st.set_page_config(page_title="持仓管理", page_icon="📈", layout="wide")
 
@@ -57,7 +58,14 @@ with st.expander("➕ 添加新持仓", expanded=False):
                     quantity, cost_price, buy_date, notes
                 )
                 if ok:
-                    st.success(msg)
+                    st.success("持仓已添加，正在获取最新行情...")
+                    # 添加后立即查询最新价格
+                    price = get_current_price(asset_code.strip(), asset_type)
+                    if price and price > 0:
+                        save_price(asset_code.strip(), asset_type, price)
+                        st.toast(f"已获取最新价格: ¥{price:.4f}", icon="💰")
+                    else:
+                        st.info("暂未获取到实时行情，今晚 22:00 自动更新")
                     st.rerun()
                 else:
                     st.error(msg)
