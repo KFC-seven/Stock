@@ -1,8 +1,10 @@
 """家庭看板 - 所有家庭成员持仓汇总"""
 import streamlit as st
 from src.portfolio import get_family_summary, plot_portfolio_pie, plot_profit_bar
+from src.styles import inject_css
 
 st.set_page_config(page_title="家庭看板", page_icon="👨‍👩‍👧‍👦", layout="wide")
+inject_css()
 
 if not st.session_state.get("authentication_status"):
     st.warning("请先在首页登录")

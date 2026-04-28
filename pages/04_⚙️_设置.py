@@ -1,8 +1,10 @@
 """设置 - 个人信息、关键词配置"""
 import streamlit as st
 from src.database import get_session, NewsKeyword
+from src.styles import inject_css
 
 st.set_page_config(page_title="设置", page_icon="⚙️", layout="wide")
+inject_css()
 
 if not st.session_state.get("authentication_status"):
     st.warning("请先在首页登录")

@@ -5,8 +5,10 @@ from src.portfolio import (
     get_user_holdings, add_holding, update_holding, delete_holding
 )
 from src.data_provider import get_current_price, save_price, search_asset
+from src.styles import inject_css
 
 st.set_page_config(page_title="持仓管理", page_icon="📈", layout="wide")
+inject_css()
 
 if not st.session_state.get("authentication_status"):
     st.warning("请先在首页登录")

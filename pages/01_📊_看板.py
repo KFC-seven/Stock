@@ -6,8 +6,10 @@ from src.portfolio import (
     plot_portfolio_pie, plot_profit_bar
 )
 from src.data_provider import update_all_prices
+from src.styles import inject_css
 
 st.set_page_config(page_title="投资看板", page_icon="📊", layout="wide")
+inject_css()
 
 if not st.session_state.get("authentication_status"):
     st.warning("请先在首页登录")
