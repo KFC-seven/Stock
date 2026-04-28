@@ -131,14 +131,20 @@ def parse_fund_text_fallback(text):
 _fund_name_cache = None
 
 
-def _load_fund_names():
-    """加载并缓存基金名称列表"""
-    global _fund_name_cache
-    if _fund_name_cache is not None:
-        return _fund_name_cache
+def _cached(func):
+    """如果有 Streamlit 则用 st.cache_data 缓存，否则直接执行"""
+    try:
+        import streamlit as st
+        return st.cache_data(ttl=3600)(func)
+    except ImportError:
+        return func
+
+
+@_cached
+def _load_fund_names_from_api():
+    """直接从 API 加载基金列表（可被 Streamlit 缓存）"""
     import akshare as ak
     df = ak.fund_name_em()
-    # 构建 简称→代码 和 全称→代码 的映射
     lookup = {}
     for _, row in df.iterrows():
         code = str(row["基金代码"])
@@ -147,8 +153,16 @@ def _load_fund_names():
         lookup[short] = code
         if full != short:
             lookup[full] = code
-    _fund_name_cache = lookup
     return lookup
+
+
+def _load_fund_names():
+    """加载并缓存基金名称列表"""
+    global _fund_name_cache
+    if _fund_name_cache is not None:
+        return _fund_name_cache
+    _fund_name_cache = _load_fund_names_from_api()
+    return _fund_name_cache
 
 
 def search_fund_by_name(name):

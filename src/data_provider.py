@@ -1,9 +1,19 @@
 """行情数据提供层 - 封装 AKShare"""
 import logging
+import functools
 from datetime import datetime, date
 from src.database import get_session, DailyPrice
 
 logger = logging.getLogger(__name__)
+
+
+def _cached(func):
+    """如果有 Streamlit 则用 st.cache_data 缓存，否则直接执行"""
+    try:
+        import streamlit as st
+        return st.cache_data(ttl=3600)(func)  # 缓存1小时
+    except ImportError:
+        return func
 
 
 def _safe_float(val, default=0.0):
@@ -19,8 +29,7 @@ def _safe_float(val, default=0.0):
 def get_stock_price(asset_code):
     """获取A股最新行情"""
     try:
-        import akshare as ak
-        df = ak.stock_zh_a_spot_em()
+        df = _get_stock_list()
         row = df[df["代码"] == asset_code]
         if row.empty:
             logger.warning(f"未找到股票 {asset_code}")
@@ -66,8 +75,7 @@ def get_gold_spot_price():
 def get_bond_price(asset_code):
     """获取可转债最新价格"""
     try:
-        import akshare as ak
-        df = ak.bond_zh_cov()
+        df = _get_bond_list()
         row = df[df["债券代码"] == asset_code]
         if row.empty:
             logger.warning(f"未找到债券 {asset_code}")
@@ -85,28 +93,37 @@ ASSET_PROVIDERS = {
 }
 
 
-# 缓存股票列表，避免每次重复请求
-_stock_cache = None
-_fund_cache = None
+@_cached
+def _get_stock_list():
+    """获取并缓存A股全量列表"""
+    import akshare as ak
+    return ak.stock_zh_a_spot_em()
+
+
+@_cached
+def _get_etf_list():
+    """获取并缓存ETF列表"""
+    import akshare as ak
+    return ak.fund_etf_spot_em()
+
+
+@_cached
+def _get_bond_list():
+    """获取并缓存可转债列表"""
+    import akshare as ak
+    return ak.bond_zh_cov()
 
 
 def search_asset(query):
     """根据代码或名称搜索匹配的资产，返回 [{code, name, type}, ...]"""
-    global _stock_cache, _fund_cache
-    import akshare as ak
     import pandas as pd
 
     results = []
     q = query.strip().upper()
 
     # 1. 搜索 A股
-    if _stock_cache is None:
-        try:
-            _stock_cache = ak.stock_zh_a_spot_em()
-        except Exception:
-            pass
-    if _stock_cache is not None:
-        df = _stock_cache
+    try:
+        df = _get_stock_list()
         match = df[df["代码"].str.contains(q, na=False) | df["名称"].str.contains(query.strip(), na=False)]
         for _, row in match.head(5).iterrows():
             results.append({
@@ -115,11 +132,12 @@ def search_asset(query):
                 "type": "stock",
                 "type_label": "股票",
             })
+    except Exception:
+        pass
 
-    # 2. 搜索基金（ETF + 公募）
+    # 2. 搜索基金（ETF）
     try:
-        # ETF 实时行情列表
-        etf_df = ak.fund_etf_spot_em()
+        etf_df = _get_etf_list()
         match = etf_df[etf_df["代码"].str.contains(q, na=False) | etf_df["名称"].str.contains(query.strip(), na=False)]
         for _, row in match.head(3).iterrows():
             results.append({
@@ -133,7 +151,7 @@ def search_asset(query):
 
     # 3. 搜索可转债
     try:
-        bond_df = ak.bond_zh_cov()
+        bond_df = _get_bond_list()
         match = bond_df[bond_df["债券代码"].str.contains(q, na=False) | bond_df["债券简称"].str.contains(query.strip(), na=False)]
         for _, row in match.head(3).iterrows():
             results.append({
@@ -153,12 +171,12 @@ def lookup_name_by_code(asset_code, asset_type):
     import akshare as ak
     try:
         if asset_type == "stock":
-            df = ak.stock_zh_a_spot_em()
+            df = _get_stock_list()
             row = df[df["代码"] == asset_code]
             if not row.empty:
                 return row.iloc[0]["名称"]
         elif asset_type == "fund":
-            df = ak.fund_etf_spot_em()
+            df = _get_etf_list()
             row = df[df["代码"] == asset_code]
             if not row.empty:
                 return row.iloc[0]["名称"]
@@ -167,7 +185,7 @@ def lookup_name_by_code(asset_code, asset_type):
             if not info.empty:
                 return f"基金{asset_code}"
         elif asset_type == "bond":
-            df = ak.bond_zh_cov()
+            df = _get_bond_list()
             row = df[df["债券代码"] == asset_code]
             if not row.empty:
                 return row.iloc[0]["债券简称"]
