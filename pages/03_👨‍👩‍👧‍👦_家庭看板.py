@@ -100,19 +100,27 @@ for item in all_holdings:
         }
 
 # 家庭合并饼图
-import plotly.express as px
+import plotly.graph_objects as go
 type_values = {}
 for item in combined_items.values():
     t = item["asset_type"]
     type_values[t] = type_values.get(t, 0) + item["value"]
 
 type_names = {"stock": "股票", "fund": "基金", "bond": "债券", "gold": "黄金"}
-fig = px.pie(
-    values=list(type_values.values()),
-    names=[type_names.get(k, k) for k in type_values.keys()],
+fig = go.Figure(data=[
+    go.Pie(
+        values=list(type_values.values()),
+        labels=[type_names.get(k, k) for k in type_values.keys()],
+        hole=0.4,
+        textinfo="label+percent+value",
+        texttemplate="%{label}<br>%{percent:.1%}<br>¥%{value:,.0f}",
+        hoverinfo="label+percent+value",
+        marker=dict(colors=px.colors.sequential.Greens_r),
+    )
+])
+fig.update_layout(
     title="家庭资产分布",
-    hole=0.4,
-    color_discrete_sequence=px.colors.sequential.Greens_r,
+    legend=dict(orientation="v", yanchor="middle", y=0.5, xanchor="left", x=1.05),
+    margin=dict(l=20, r=120, t=40, b=20),
 )
-fig.update_traces(textposition="inside", textinfo="percent+label")
 st.plotly_chart(fig, use_container_width=True)

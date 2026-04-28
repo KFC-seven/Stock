@@ -237,13 +237,22 @@ def plot_portfolio_pie(portfolio_result):
     labels = [type_names.get(k, k) for k in dist.keys()]
     values = [v["value"] for v in dist.values()]
 
-    fig = px.pie(
-        values=values, names=labels,
+    fig = go.Figure(data=[
+        go.Pie(
+            values=values,
+            labels=labels,
+            hole=0.4,
+            textinfo="label+percent+value",
+            texttemplate="%{label}<br>%{percent:.1%}<br>¥%{value:,.0f}",
+            hoverinfo="label+percent+value",
+            marker=dict(colors=px.colors.sequential.Blues_r),
+        )
+    ])
+    fig.update_layout(
         title="资产分布",
-        hole=0.4,
-        color_discrete_sequence=px.colors.sequential.Blues_r,
+        legend=dict(orientation="v", yanchor="middle", y=0.5, xanchor="left", x=1.05),
+        margin=dict(l=20, r=120, t=40, b=20),
     )
-    fig.update_traces(textposition="inside", textinfo="percent+label")
     return fig
 
 
