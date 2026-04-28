@@ -135,7 +135,7 @@ def _cached(func):
     """如果有 Streamlit 则用 st.cache_data 缓存，否则直接执行"""
     try:
         import streamlit as st
-        return st.cache_data(ttl=3600)(func)
+        return st.cache_data(ttl=86400)(func)
     except ImportError:
         return func
 

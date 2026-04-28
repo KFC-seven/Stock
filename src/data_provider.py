@@ -11,7 +11,7 @@ def _cached(func):
     """如果有 Streamlit 则用 st.cache_data 缓存，否则直接执行"""
     try:
         import streamlit as st
-        return st.cache_data(ttl=3600)(func)  # 缓存1小时
+        return st.cache_data(ttl=86400)(func)  # 缓存24小时（净值一天一更新）
     except ImportError:
         return func
 
