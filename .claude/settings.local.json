@@ -38,7 +38,8 @@
       "Bash(/c/Program Files/GitHub CLI/gh.exe repo *)",
       "WebFetch(domain:stock-manager-zy.streamlit.app)",
       "Bash(curl *)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(\"C:/Users/ZY/AppData/Local/Programs/Python/Python312/python.exe\" -m pip install pytesseract opencv-python-headless)"
     ]
   }
 }
