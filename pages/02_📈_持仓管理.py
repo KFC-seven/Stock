@@ -69,22 +69,31 @@ with st.expander("➕ 添加新持仓", expanded=True):
         a = st.session_state.selected_asset
         st.success(f"已识别: [{a['type_label']}] {a['code']} - {a['name']}")
 
-    # 添加表单
-    with st.form("add_holding_form"):
+    # 添加表单（key 随选中资产变化，确保选中后自动填充）
+    selected_code = st.session_state.selected_asset["code"] if st.session_state.get("selected_asset") else ""
+    form_key = f"add_form_{selected_code}" if selected_code else "add_form_empty"
+
+    with st.form(form_key):
         cols = st.columns(2)
         with cols[0]:
-            default_type = st.session_state.selected_asset["type"] if st.session_state.selected_asset else "stock"
+            default_type = st.session_state.selected_asset["type"] if st.session_state.get("selected_asset") else "stock"
             asset_type = st.selectbox(
                 "资产类型",
                 options=list(ASSET_TYPES.keys()),
                 format_func=lambda x: ASSET_TYPES[x],
                 index=list(ASSET_TYPES.keys()).index(default_type) if default_type in ASSET_TYPES else 0,
             )
-            default_code = st.session_state.selected_asset["code"] if st.session_state.selected_asset else ""
-            asset_code = st.text_input("代码", value=default_code, placeholder="如: 600519")
+            asset_code = st.text_input(
+                "代码",
+                value=st.session_state.selected_asset["code"] if st.session_state.get("selected_asset") else "",
+                placeholder="如: 600519"
+            )
         with cols[1]:
-            default_name = st.session_state.selected_asset["name"] if st.session_state.selected_asset else ""
-            asset_name = st.text_input("名称", value=default_name, placeholder="如: 贵州茅台")
+            asset_name = st.text_input(
+                "名称",
+                value=st.session_state.selected_asset["name"] if st.session_state.get("selected_asset") else "",
+                placeholder="如: 贵州茅台"
+            )
             quantity = st.number_input("持有数量", min_value=0.0, step=0.01, format="%.4f")
 
         col3, col4 = st.columns(2)
