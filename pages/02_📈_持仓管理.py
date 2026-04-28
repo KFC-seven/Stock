@@ -4,7 +4,7 @@ from datetime import date
 from src.portfolio import (
     get_user_holdings, add_holding, update_holding, delete_holding
 )
-from src.data_provider import get_current_price, save_price
+from src.data_provider import get_current_price, save_price, search_asset
 
 st.set_page_config(page_title="持仓管理", page_icon="📈", layout="wide")
 
@@ -24,19 +24,64 @@ ASSET_TYPES = {
     "gold": "黄金",
 }
 
+# 初始化搜索状态
+if "search_results" not in st.session_state:
+    st.session_state.search_results = None
+if "selected_asset" not in st.session_state:
+    st.session_state.selected_asset = None
+
 # 添加新持仓
-with st.expander("➕ 添加新持仓", expanded=False):
+with st.expander("➕ 添加新持仓", expanded=True):
+    # 搜索区域
+    s_col1, s_col2 = st.columns([3, 1])
+    with s_col1:
+        search_query = st.text_input("输入代码或名称搜索", placeholder="如: 019095、600519、贵州茅台...")
+    with s_col2:
+        if st.button("🔍 查询", use_container_width=True):
+            if search_query.strip():
+                with st.spinner("正在查询..."):
+                    results = search_asset(search_query)
+                    st.session_state.search_results = results
+                    st.session_state.selected_asset = None
+                    st.rerun()
+            else:
+                st.warning("请输入代码或名称")
+
+    # 显示搜索结果
+    if st.session_state.search_results:
+        results = st.session_state.search_results
+        if results:
+            options = [f"[{r['type_label']}] {r['code']} - {r['name']}" for r in results]
+            selected = st.radio("找到以下匹配，请选择：", options, index=None, horizontal=True)
+            if selected:
+                idx = options.index(selected)
+                st.session_state.selected_asset = results[idx]
+                st.session_state.search_results = None
+                st.rerun()
+        else:
+            st.info("未找到匹配结果，请手动填写下方信息")
+
+    # 已选中的资产，显示确认信息
+    if st.session_state.selected_asset:
+        a = st.session_state.selected_asset
+        st.success(f"已识别: [{a['type_label']}] {a['code']} - {a['name']}")
+
+    # 添加表单
     with st.form("add_holding_form"):
-        col1, col2 = st.columns(2)
-        with col1:
+        cols = st.columns(2)
+        with cols[0]:
+            default_type = st.session_state.selected_asset["type"] if st.session_state.selected_asset else "stock"
             asset_type = st.selectbox(
                 "资产类型",
                 options=list(ASSET_TYPES.keys()),
                 format_func=lambda x: ASSET_TYPES[x],
+                index=list(ASSET_TYPES.keys()).index(default_type) if default_type in ASSET_TYPES else 0,
             )
-            asset_code = st.text_input("代码", placeholder="如: 600519（股票代码）")
-        with col2:
-            asset_name = st.text_input("名称", placeholder="如: 贵州茅台")
+            default_code = st.session_state.selected_asset["code"] if st.session_state.selected_asset else ""
+            asset_code = st.text_input("代码", value=default_code, placeholder="如: 600519")
+        with cols[1]:
+            default_name = st.session_state.selected_asset["name"] if st.session_state.selected_asset else ""
+            asset_name = st.text_input("名称", value=default_name, placeholder="如: 贵州茅台")
             quantity = st.number_input("持有数量", min_value=0.0, step=0.01, format="%.4f")
 
         col3, col4 = st.columns(2)
@@ -59,13 +104,15 @@ with st.expander("➕ 添加新持仓", expanded=False):
                 )
                 if ok:
                     st.success("持仓已添加，正在获取最新行情...")
-                    # 添加后立即查询最新价格
                     price = get_current_price(asset_code.strip(), asset_type)
                     if price and price > 0:
                         save_price(asset_code.strip(), asset_type, price)
                         st.toast(f"已获取最新价格: ¥{price:.4f}", icon="💰")
                     else:
                         st.info("暂未获取到实时行情，今晚 22:00 自动更新")
+                    # 清空搜索状态
+                    st.session_state.search_results = None
+                    st.session_state.selected_asset = None
                     st.rerun()
                 else:
                     st.error(msg)

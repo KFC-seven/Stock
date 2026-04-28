@@ -85,6 +85,97 @@ ASSET_PROVIDERS = {
 }
 
 
+# 缓存股票列表，避免每次重复请求
+_stock_cache = None
+_fund_cache = None
+
+
+def search_asset(query):
+    """根据代码或名称搜索匹配的资产，返回 [{code, name, type}, ...]"""
+    global _stock_cache, _fund_cache
+    import akshare as ak
+    import pandas as pd
+
+    results = []
+    q = query.strip().upper()
+
+    # 1. 搜索 A股
+    if _stock_cache is None:
+        try:
+            _stock_cache = ak.stock_zh_a_spot_em()
+        except Exception:
+            pass
+    if _stock_cache is not None:
+        df = _stock_cache
+        match = df[df["代码"].str.contains(q, na=False) | df["名称"].str.contains(query.strip(), na=False)]
+        for _, row in match.head(5).iterrows():
+            results.append({
+                "code": str(row["代码"]),
+                "name": row["名称"],
+                "type": "stock",
+                "type_label": "股票",
+            })
+
+    # 2. 搜索基金（ETF + 公募）
+    try:
+        # ETF 实时行情列表
+        etf_df = ak.fund_etf_spot_em()
+        match = etf_df[etf_df["代码"].str.contains(q, na=False) | etf_df["名称"].str.contains(query.strip(), na=False)]
+        for _, row in match.head(3).iterrows():
+            results.append({
+                "code": str(row["代码"]),
+                "name": row["名称"],
+                "type": "fund",
+                "type_label": "基金(ETF)",
+            })
+    except Exception:
+        pass
+
+    # 3. 搜索可转债
+    try:
+        bond_df = ak.bond_zh_cov()
+        match = bond_df[bond_df["债券代码"].str.contains(q, na=False) | bond_df["债券简称"].str.contains(query.strip(), na=False)]
+        for _, row in match.head(3).iterrows():
+            results.append({
+                "code": str(row["债券代码"]),
+                "name": row["债券简称"],
+                "type": "bond",
+                "type_label": "可转债",
+            })
+    except Exception:
+        pass
+
+    return results
+
+
+def lookup_name_by_code(asset_code, asset_type):
+    """根据代码和类型查询资产名称"""
+    import akshare as ak
+    try:
+        if asset_type == "stock":
+            df = ak.stock_zh_a_spot_em()
+            row = df[df["代码"] == asset_code]
+            if not row.empty:
+                return row.iloc[0]["名称"]
+        elif asset_type == "fund":
+            df = ak.fund_etf_spot_em()
+            row = df[df["代码"] == asset_code]
+            if not row.empty:
+                return row.iloc[0]["名称"]
+            # 尝试场外基金
+            info = ak.fund_open_fund_info_em(symbol=asset_code, indicator="单位净值走势")
+            if not info.empty:
+                return f"基金{asset_code}"
+        elif asset_type == "bond":
+            df = ak.bond_zh_cov()
+            row = df[df["债券代码"] == asset_code]
+            if not row.empty:
+                return row.iloc[0]["债券简称"]
+    except Exception:
+        pass
+    return asset_code
+
+
 def get_current_price(asset_code, asset_type):
     """通用接口：获取某资产当前价格"""
     if asset_type == "gold":
