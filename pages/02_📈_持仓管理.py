@@ -34,37 +34,38 @@ if "selected_asset" not in st.session_state:
 
 # 添加新持仓
 with st.expander("➕ 添加新持仓", expanded=True):
-    # 搜索区域
-    s_col1, s_col2 = st.columns([3, 1])
-    with s_col1:
-        search_query = st.text_input("输入代码或名称搜索", placeholder="如: 019095、600519、贵州茅台...")
-    with s_col2:
-        if st.button("🔍 查询", use_container_width=True):
-            if search_query.strip():
-                with st.spinner("正在查询..."):
-                    results = search_asset(search_query)
-                    st.session_state.search_results = results
-                    st.session_state.selected_asset = None
-                    st.rerun()
-            else:
-                st.warning("请输入代码或名称")
+    # 搜索区：输入即搜 + 结果下拉
+    search_query = st.text_input(
+        "搜索资产",
+        placeholder="输入代码或名称，自动搜索..."
+    )
+
+    # 自动搜索（每次 rerun 检查输入变化）
+    if search_query and len(search_query.strip()) >= 1:
+        q = search_query.strip()
+        if st.session_state.get("_last_search") != q:
+            st.session_state._last_search = q
+            results = search_asset(q)
+            st.session_state.search_results = results
+            st.session_state.selected_asset = None
 
     # 显示搜索结果
-    if st.session_state.search_results:
+    if st.session_state.get("search_results"):
         results = st.session_state.search_results
         if results:
             options = [f"[{r['type_label']}] {r['code']} - {r['name']}" for r in results]
-            selected = st.radio("找到以下匹配，请选择：", options, index=None, horizontal=True)
+            selected = st.radio("匹配结果：", options, index=None, horizontal=True, label_visibility="collapsed")
             if selected:
                 idx = options.index(selected)
                 st.session_state.selected_asset = results[idx]
                 st.session_state.search_results = None
+                st.session_state._last_search = ""
                 st.rerun()
         else:
-            st.info("未找到匹配结果，请手动填写下方信息")
+            st.caption("未找到匹配，请手动填写下方信息")
 
     # 已选中的资产，显示确认信息
-    if st.session_state.selected_asset:
+    if st.session_state.get("selected_asset"):
         a = st.session_state.selected_asset
         st.success(f"已识别: [{a['type_label']}] {a['code']} - {a['name']}")
 
