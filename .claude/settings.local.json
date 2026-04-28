@@ -1,0 +1,34 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/ZY/.claude/**)",
+      "Bash(claude --version)",
+      "Bash(env)",
+      "Bash(pip --version)",
+      "Read(//c/Users/ZY/AppData/Local/Programs/**)",
+      "Bash(where python *)",
+      "Read(//c/Users/ZY/AppData/Local/Programs//**)",
+      "Bash(pip3 --version)",
+      "Bash(/c/Users/ZY/AppData/Local/Microsoft/WindowsApps/python3 *)",
+      "Bash(cmd.exe //c \"python --version\")",
+      "Bash(cmd.exe //c \"where python\")",
+      "Bash(cmd.exe //c \"py --version\")",
+      "Bash(cmd.exe *)",
+      "Bash(winget install *)",
+      "Bash(C:/Users/ZY/AppData/Local/Programs/Python/Python312/python.exe *)",
+      "Bash(mv /d/Program/Stock/streamlit /d/Program/Stock/.streamlit)",
+      "Bash(mkdir -p /d/Program/Stock/.streamlit)",
+      "Bash(\"C:/Users/ZY/AppData/Local/Programs/Python/Python312/python.exe\" -m pip install --upgrade pip)",
+      "Bash(\"C:/Users/ZY/AppData/Local/Programs/Python/Python312/Scripts/streamlit.exe\" config *)",
+      "Bash(gh auth *)",
+      "Bash(/c/Program Files/GitHub CLI/gh.exe auth *)",
+      "Bash(\"/c/Program Files/GitHub CLI/gh.exe\" auth login --with-token)",
+      "Bash(GH_TOKEN=\"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\" /c/Program Files/GitHub CLI/gh.exe auth *)",
+      "Bash(GH_TOKEN=\"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\" /c/Program Files/GitHub CLI/gh.exe repo *)",
+      "Bash(git init *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(GH_TOKEN=\"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\" \"/c/Program Files/GitHub CLI/gh.exe\" repo create Stock --private --description \"个人投资管理系统\" --push --source .)"
+    ]
+  }
+}

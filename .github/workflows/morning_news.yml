@@ -1,0 +1,33 @@
+name: 早晨新闻推送
+
+on:
+  schedule:
+    # 工作日早 8:00 执行
+    - cron: '0 8 * * 1-5'
+  workflow_dispatch:
+
+jobs:
+  fetch-news:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 设置 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 安装依赖
+        run: |
+          pip install -r requirements.txt
+
+      - name: 拉取新闻
+        run: python scripts/morning_news.py
+
+      - name: 提交数据变更
+        run: |
+          git config user.name "News Bot"
+          git config user.email "bot@investment.local"
+          git add data/
+          git diff --cached --quiet || git commit -m "chore: morning news update $(date +%Y-%m-%d)"
+          git push

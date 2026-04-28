@@ -1,0 +1,16 @@
+[server]
+maxUploadSize = 10
+
+[runner]
+fastReruns = true
+
+[theme]
+base = "dark"
+primaryColor = "#00a67e"
+backgroundColor = "#0e1117"
+secondaryBackgroundColor = "#262730"
+textColor = "#fafafa"
+font = "sans serif"
+
+[browser]
+gatherUsageStats = false

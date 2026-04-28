@@ -1,0 +1,35 @@
+name: 每日净值更新
+
+on:
+  schedule:
+    # 周一至周五每晚 22:00 执行
+    - cron: '0 22 * * 1-5'
+  workflow_dispatch:  # 支持手动触发
+
+jobs:
+  update-prices:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 设置 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 安装依赖
+        run: |
+          pip install -r requirements.txt
+
+      - name: 更新净值
+        run: python scripts/daily_update.py
+
+      - name: 提交数据变更
+        run: |
+          git config user.name "Investment Bot"
+          git config user.email "bot@investment.local"
+          git add data/  # 只提交数据目录
+          git diff --cached --quiet || git commit -m "chore: daily price update $(date +%Y-%m-%d)"
+          git push
