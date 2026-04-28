@@ -75,25 +75,35 @@ if "ocr_all_parsed" in st.session_state and st.session_state["ocr_all_parsed"]:
     edited_items = []
     for i, item in enumerate(all_parsed):
         with st.container(border=True):
-            c1, c2, c3, c4 = st.columns([3, 1, 1, 1])
-            with c1:
+            cols = st.columns([3, 1, 1, 1, 0.8])
+            with cols[0]:
                 name = st.text_input(
                     "名称", value=item.get("name", ""),
                     key=f"ocr_name_{i}"
                 )
-            with c2:
+            with cols[1]:
                 profit_amount = st.number_input(
                     "昨日收益", value=item.get("profit_amount") or 0.0,
                     step=0.01, format="%.2f", key=f"ocr_amt_{i}"
                 )
-            with c3:
+            with cols[2]:
                 profit_rate = st.number_input(
                     "收益率%", value=item.get("profit_rate") or 0.0,
                     step=0.01, format="%.2f", key=f"ocr_rate_{i}"
                 )
-            with c4:
+            with cols[3]:
                 source = item.get("_source", "")
                 st.caption(f"来源: {source}")
+            with cols[4]:
+                if st.button("🗑️ 删除", key=f"ocr_del_{i}", help="删除此条"):
+                    all_parsed.pop(i)
+                    st.session_state["ocr_all_parsed"] = all_parsed
+                    # 清理每条记录的计算状态（避免删除后索引错位）
+                    for k in list(st.session_state.keys()):
+                        if k.startswith("ocr_calc_") or k.startswith("ocr_name_") or \
+                           k.startswith("ocr_amt_") or k.startswith("ocr_rate_"):
+                            del st.session_state[k]
+                    st.rerun()
 
             # 计算按钮
             if st.button("📊 计算", key=f"ocr_calc_{i}", use_container_width=True):
