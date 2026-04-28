@@ -59,6 +59,7 @@ def get_authenticator():
         config["cookie"]["name"],
         config["cookie"]["key"],
         config["cookie"]["expiry_days"],
+        auto_hash=False,  # 我们手动 hash 密码
     )
     return authenticator
 
@@ -75,7 +76,7 @@ def login_page():
 
         tab1, tab2 = st.tabs(["登录", "注册"])
         with tab1:
-            authenticator.login("login", "main", fields={
+            authenticator.login(location="main", fields={
                 "Form name": "登录",
                 "Username": "用户名",
                 "Password": "密码",

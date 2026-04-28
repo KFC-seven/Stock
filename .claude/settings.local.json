@@ -28,7 +28,16 @@
       "Bash(git init *)",
       "Bash(git add *)",
       "Bash(git commit *)",
-      "Bash(GH_TOKEN=\"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\" \"/c/Program Files/GitHub CLI/gh.exe\" repo create Stock --private --description \"个人投资管理系统\" --push --source .)"
+      "Bash(GH_TOKEN=\"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\" \"/c/Program Files/GitHub CLI/gh.exe\" repo create Stock --private --description \"个人投资管理系统\" --push --source .)",
+      "Bash(unset GH_TOKEN)",
+      "Bash(\"/c/Program Files/GitHub CLI/gh.exe\" auth refresh -h github.com --scopes \"repo,workflow,read:org\")",
+      "Bash(\"/c/Program Files/GitHub CLI/gh.exe\" auth status)",
+      "Bash(\"/c/Program Files/GitHub CLI/gh.exe\" repo list --limit 1)",
+      "Bash(git push *)",
+      "Bash(git rm *)",
+      "Bash(/c/Program Files/GitHub CLI/gh.exe repo *)",
+      "WebFetch(domain:stock-manager-zy.streamlit.app)",
+      "Bash(curl *)"
     ]
   }
 }
