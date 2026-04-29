@@ -52,7 +52,9 @@
       "Bash(npx vite *)",
       "Bash(taskkill -f -im python.exe)",
       "Bash(npx vercel *)",
-      "Bash(npx vue-tsc *)"
+      "Bash(npx vue-tsc *)",
+      "Bash(npx zeabur@latest *)",
+      "Bash(yes \"\")"
     ]
   }
 }
