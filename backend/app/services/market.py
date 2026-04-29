@@ -116,14 +116,27 @@ def update_all_prices(db: Session) -> list:
     return results
 
 
+# 缓存基金名称列表
+_fund_cache = None
+
+
+def _get_fund_list():
+    global _fund_cache
+    if _fund_cache is not None:
+        return _fund_cache
+    import akshare as ak
+    df = ak.fund_name_em()
+    _fund_cache = df
+    return df
+
+
 def search_asset(query: str) -> list:
     results = []
     q = query.strip().upper()
 
-    # 1. 搜索基金（使用 fund_name_em 全量列表）
+    # 1. 搜索基金（使用 fund_name_em 全量列表，带缓存）
     try:
-        import akshare as ak
-        df = ak.fund_name_em()
+        df = _get_fund_list()
         match = df[df["基金代码"].str.contains(q, na=False) | df["基金简称"].str.contains(query.strip(), na=False)]
         for _, row in match.head(5).iterrows():
             results.append({"code": str(row["基金代码"]), "name": row["基金简称"], "type": "fund", "type_label": "基金"})
