@@ -9,10 +9,13 @@ from app.core.config import CORS_ORIGINS
 from app.models.database import Base, engine
 from app.api import auth, holdings, portfolio, market
 
-# 初始化数据库
-Base.metadata.create_all(bind=engine)
-
 app = FastAPI(title="投资管家 API", version="2.0.0")
+
+
+@app.on_event("startup")
+def init_db():
+    """首次启动时初始化数据库表"""
+    Base.metadata.create_all(bind=engine)
 
 # CORS
 app.add_middleware(

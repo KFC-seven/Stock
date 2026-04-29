@@ -13,10 +13,13 @@ ACCESS_TOKEN_EXPIRE = timedelta(days=30)
 # 数据库
 _db_dir = os.path.join(BASE_DIR, "data")
 os.makedirs(_db_dir, exist_ok=True)
-DATABASE_URL = os.getenv(
-    "DATABASE_URL",
-    f"sqlite:///{os.path.join(_db_dir, 'investments.db')}"
-)
+_raw_db_url = os.getenv("DATABASE_URL", f"sqlite:///{os.path.join(_db_dir, 'investments.db')}")
+
+# 自动处理 PostgreSQL 驱动
+if _raw_db_url.startswith("postgresql://"):
+    DATABASE_URL = _raw_db_url.replace("postgresql://", "postgresql+pg8000://", 1)
+else:
+    DATABASE_URL = _raw_db_url
 
 # CORS
 CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:5173,http://localhost:3000").split(",")
