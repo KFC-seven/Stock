@@ -55,7 +55,9 @@
       "Bash(npx vue-tsc *)",
       "Bash(npx zeabur@latest *)",
       "Bash(yes \"\")",
-      "Bash(nslookup stock-api-pearl.vercel.app)"
+      "Bash(nslookup stock-api-pearl.vercel.app)",
+      "Bash(npm i *)",
+      "Bash(railway login *)"
     ]
   }
 }
