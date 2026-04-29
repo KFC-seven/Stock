@@ -57,7 +57,14 @@
       "Bash(yes \"\")",
       "Bash(nslookup stock-api-pearl.vercel.app)",
       "Bash(npm i *)",
-      "Bash(railway login *)"
+      "Bash(railway login *)",
+      "Bash(sshpass *)",
+      "Bash(/usr/bin/ssh-keygen -t rsa -f ~/.ssh/id_rsa -N \"\" -q)",
+      "Bash(\"/c/Program Files/GitHub CLI/gh.exe\" ssh-key add -t \"stock-server\")",
+      "Read(//c/Users/ZY/.ssh/**)",
+      "Bash(expect *)",
+      "Bash(\"C:/Users/ZY/AppData/Local/Programs/Python/Python312/python.exe\" -m pip install sshpass)",
+      "Bash(\"C:/Users/ZY/AppData/Local/Programs/Python/Python312/python.exe\" -m pip install paramiko)"
     ]
   }
 }

@@ -49,7 +49,7 @@ async function handleSubmit() {
           </a-form>
         </a-tab-pane>
         <a-tab-pane key="register" tab="注册">
-          <a-form @finish="handleSubmit">
+          <a-form @finish="handleSubmit" :model="{ r_user: username, r_name: displayName, r_pass: password }">
             <a-form-item name="r_user" :rules="[{ required: true, message: '请输入用户名' }]">
               <a-input v-model:value="username" placeholder="用户名" size="large" />
             </a-form-item>
