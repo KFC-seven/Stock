@@ -24,11 +24,10 @@ def _safe_float(val, default=0.0):
 def get_stock_price(asset_code: str) -> float | None:
     try:
         import akshare as ak
-        df = ak.stock_zh_a_spot_em()
-        row = df[df["代码"] == asset_code]
-        if row.empty:
+        df = ak.stock_zh_a_hist(symbol=asset_code, period="daily", start_date="20200101")
+        if df.empty:
             return None
-        return _safe_float(row.iloc[0]["最新价"])
+        return _safe_float(df.iloc[-1]["收盘"])
     except Exception as e:
         logger.error(f"股票 {asset_code}: {e}")
         return None
@@ -120,26 +119,46 @@ def update_all_prices(db: Session) -> list:
 def search_asset(query: str) -> list:
     results = []
     q = query.strip().upper()
+
+    # 1. 搜索基金（使用 fund_name_em 全量列表）
     try:
         import akshare as ak
-        df = ak.stock_zh_a_spot_em()
-        match = df[df["代码"].str.contains(q, na=False) | df["名称"].str.contains(query.strip(), na=False)]
+        df = ak.fund_name_em()
+        match = df[df["基金代码"].str.contains(q, na=False) | df["基金简称"].str.contains(query.strip(), na=False)]
         for _, row in match.head(5).iterrows():
-            results.append({"code": str(row["代码"]), "name": row["名称"], "type": "stock", "type_label": "股票"})
+            results.append({"code": str(row["基金代码"]), "name": row["基金简称"], "type": "fund", "type_label": "基金"})
     except Exception:
         pass
+
+    # 2. 搜索可转债
     try:
-        df = ak.fund_etf_spot_em()
-        match = df[df["代码"].str.contains(q, na=False) | df["名称"].str.contains(query.strip(), na=False)]
-        for _, row in match.head(3).iterrows():
-            results.append({"code": str(row["代码"]), "name": row["名称"], "type": "fund", "type_label": "基金(ETF)"})
-    except Exception:
-        pass
-    try:
-        df = ak.bond_zh_cov()
-        match = df[df["债券代码"].str.contains(q, na=False) | df["债券简称"].str.contains(query.strip(), na=False)]
+        import akshare as ak
+        bond_df = ak.bond_zh_cov()
+        match = bond_df[bond_df["债券代码"].str.contains(q, na=False) | bond_df["债券简称"].str.contains(query.strip(), na=False)]
         for _, row in match.head(3).iterrows():
             results.append({"code": str(row["债券代码"]), "name": row["债券简称"], "type": "bond", "type_label": "可转债"})
     except Exception:
         pass
+
+    # 3. 搜索股票（逐个尝试查询）
+    try:
+        import akshare as ak
+        df = ak.stock_zh_a_hist(symbol=q, period="daily", start_date="20250101")
+        if not df.empty:
+            name_col = df.columns[0]
+            results.append({"code": q, "name": f"A股-{q}", "type": "stock", "type_label": "股票"})
+    except Exception:
+        pass
+
+    # 4. 尝试通过 ETF 列表搜索股票
+    try:
+        import akshare as ak
+        df = ak.fund_etf_spot_em()
+        match = df[df["代码"].str.contains(q, na=False) | df["名称"].str.contains(query.strip(), na=False)]
+        for _, row in match.head(3).iterrows():
+            if not any(r["code"] == str(row["代码"]) for r in results):
+                results.append({"code": str(row["代码"]), "name": row["名称"], "type": "stock", "type_label": row.get("类型", "ETF")})
+    except Exception:
+        pass
+
     return results
